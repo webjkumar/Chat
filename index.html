@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <title>Creating a Chat Application in Node JS with Express, MongoDB, Mongoose and Socket.io</title>
 
-<link rel='stylesheet', href='/bootstrap-3.3.7-dist/css/bootstrap.min.css'>
-<link rel='stylesheet', href='/bootstrap-3.3.7-dist/css/bootstrap-theme.min.css', integrity='sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp', crossorigin='anonymous'>
-<link rel='stylesheet', href='/stylesheets/style.css'>
+<link rel='stylesheet' , href='/bootstrap-3.3.7-dist/css/bootstrap.min.css'>
+<link rel='stylesheet' , href='/bootstrap-3.3.7-dist/css/bootstrap-theme.min.css' , integrity='sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp'
+    , crossorigin='anonymous'>
+<link rel='stylesheet' , href='/stylesheets/style.css'>
 
 <script src='/javascripts/jquery-3.3.1.min.js'></script>
 <script src='/bootstrap-3.3.7-dist/js/bootstrap.min.js'></script>
 <script src="/socket.io/socket.io.js"></script>
 
 <div class="container">
+    <h1 class="">Start Chatting</h1>
+    <input id="txtName" class="form-control" placeholder="Name" type="text">
     <br>
-    <div class="jumbotron">
-        <h1 class="dispaly-4">Start Chatting</h1>
-        <br>
-        <input id="txtName" class="form-control" placeholder="Name" type="text">
-        <br>
-        <textarea id="txtMessage" class="form-control" placeholder="Message"></textarea>
-        <br>
-        <button id="send" class="btn btn-success">Send</button>
+    <div id="messages">
     </div>
-    <div id="messages"></div>
+    <br>
+    <textarea id="txtMessage" class="form-control" placeholder="Message"></textarea>
+    <br>
+    <button id="send" class="btn btn-success">Send</button>
 </div>
 
 <script>
@@ -30,15 +29,16 @@
         getChats()
 
         $("#send").click(() => {
+            var today  = new Date();
             var chatMessage = {
-                name: $("#txtName").val(), chat: $("#txtMessage").val()
+                name: $("#txtName").val(), chat: $("#txtMessage").val(), time: today.toLocaleString()
             }
             postChat(chatMessage)
         })
     })
 
     function postChat(chat) {
-        $.post("http://localhost:9090/chats", chat)
+        $.post("/chats", chat)
     }
 
     function getChats() {
@@ -48,7 +48,11 @@
     }
 
     function addChat(chatObj) {
-        $("#messages").append(`<h5>${chatObj.name} </h5><p>${chatObj.chat}</p>`);
+        $("#messages").append(`<div class="row">
+            <div class="col-sm-3 text-primary">${chatObj.name} </div>
+            <div class="col-sm-6 text-success">${chatObj.chat}</div>
+            <div class="col-sm-3 text-success">${chatObj.time}</div>
+        </div>`);
     }
 
 </script>
