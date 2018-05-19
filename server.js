@@ -14,12 +14,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
-mongoose.Promise = Promise
+mongoose.Promise = Promise;
 
-var Chats = mongoose.model("Chats", {
-    name: String,
-    chat: String
-})
+var Message = mongoose.model("message", {
+    from: String,
+    text: String,
+    created: String
+});
 
 mongoose.connect(conString, { useMongoClient: true }, (err) => {
     console.log("Database connection", err)
@@ -27,25 +28,57 @@ mongoose.connect(conString, { useMongoClient: true }, (err) => {
 
 app.post("/chats", async (req, res) => {
     try {
-        var chat = new Chats(req.body)
-        await chat.save()
+        var msg = new Message(req.body)
+        await msg.save()
         res.sendStatus(200)
         //Emit the event
-        io.emit("chat", req.body)
+        io.emit('message', req.body);
     } catch (error) {
         res.sendStatus(500)
         console.error(error)
     }
-})
+});
+
+// Add headers
+app.use(function (req, res, next) {
+
+    // Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+
+    // Pass to next layer of middleware
+    next();
+});
 
 app.get("/chats", (req, res) => {
-    Chats.find({}, (error, chats) => {
-        res.send(chats)
+    Message.find({}, (error, messages) => {
+        res.send(messages)
     })
 })
 
 io.on("connection", (socket) => {
-    console.log("Socket is connected...")
+    console.log("Socket is connected...");
+    socket.on('disconnect', function () {
+        io.emit('users-changed', { user: socket.nickname, event: 'left' });
+    });
+
+    socket.on('set-nickname', (nickname) => {
+        socket.nickname = nickname;
+        io.emit('users-changed', { user: nickname, event: 'joined' });
+    });
+
+    socket.on('add-message', (message) => {
+        io.emit('message', { text: message.text, from: socket.nickname, created: new Date() });
+    });
 })
 
 var server = http.listen(9090, () => {
