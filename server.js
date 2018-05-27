@@ -22,6 +22,11 @@ var Message = mongoose.model("message", {
     created: String
 });
 
+var Registration = mongoose.model("registration", {
+    registrationId: String,
+    created: String
+});
+
 mongoose.connect(conString, { useMongoClient: true }, (err) => {
     console.log("Database connection", err)
 });
@@ -78,6 +83,7 @@ app.post("/pushmsg", async (req, res) => {
         res.sendStatus(500)
         console.error(error)
     }
+}
 });
 
 app.post("/registration", async (req, res) => {
@@ -95,7 +101,8 @@ app.post("/registration", async (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', true);
 
     try {
-        console.log("registration: ",req.body);
+        var msg = new Registration(req.body)
+        await msg.save()
         res.sendStatus(200)
     } catch (error) {
         res.sendStatus(500)
