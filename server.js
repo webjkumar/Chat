@@ -24,7 +24,84 @@ var Message = mongoose.model("message", {
 
 mongoose.connect(conString, { useMongoClient: true }, (err) => {
     console.log("Database connection", err)
-})
+});
+
+app.post("/pushmsg", async (req, res) => {
+    // Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+
+    function sendMessageToUser(deviceId, message) {
+      request({
+        url: 'https://fcm.googleapis.com/fcm/send',
+        method: 'POST',
+        headers: {
+          'Content-Type' :' application/json',
+          'Authorization': 'key=AIzaSyCpJpHfQhFByzSwGq2m3Xg7PjJHadtVAq8'
+        },
+        body: JSON.stringify(
+          { "data": {
+            "message": message
+          },
+            "to" : deviceId
+          }
+        )
+      }, function(error, response, body) {
+        if (error) { 
+          console.error(error, response, body); 
+        }
+        else if (response.statusCode >= 400) { 
+          console.error('HTTP Error: '+response.statusCode+' - '+response.statusMessage+'\n'+body); 
+        }
+        else {
+          console.log('Done!')
+        }
+      });
+
+    
+
+    try {
+        sendMessageToUser(
+          "d7x...KJQ",
+          { message: 'Hello puf'}
+        );
+    } catch (error) {
+        res.sendStatus(500)
+        console.error(error)
+    }
+});
+
+app.post("/registration", async (req, res) => {
+    // Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+
+    try {
+        console.log("registration: ",req.body);
+        res.sendStatus(200)
+    } catch (error) {
+        res.sendStatus(500)
+        console.error(error)
+    }
+});
 
 app.post("/chats", async (req, res) => {
     // Website you wish to allow to connect
